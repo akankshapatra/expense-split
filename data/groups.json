@@ -1,0 +1,37 @@
+{
+  "groupA": {
+    "name": "Weekend Hackathon Team",
+    "members": ["priya", "ravi", "anita", "rohan"],
+    "expenses": [
+      {
+        "id": 1,
+        "description": "Team Dinner & Pizza",
+        "amount": 1200.0,
+        "paid_by": "priya",
+        "split": "equal"
+      },
+      {
+        "id": 2,
+        "description": "Snacks & Energy Drinks",
+        "amount": 400.0,
+        "paid_by": "ravi",
+        "split": "equal"
+      }
+    ],
+    "settlements": []
+  },
+  "flatmates": {
+    "name": "Flat 302",
+    "members": ["karan", "siddharth", "arjun"],
+    "expenses": [
+      {
+        "id": 1,
+        "description": "Broadband Internet Bill",
+        "amount": 999.0,
+        "paid_by": "karan",
+        "split": "equal"
+      }
+    ],
+    "settlements": []
+  }
+}
