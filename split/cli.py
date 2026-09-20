@@ -37,7 +37,6 @@ def cmd_add_expense(args):
         print(f"Error: Group '{args.group}' not found.")
         return
 
-    # BUG: Does not validate that amount is strictly positive, silently allowing negative expenses
     amount = float(args.amount)
 
     expenses = group.get("expenses", [])
@@ -65,7 +64,6 @@ def cmd_settle(args):
     receiver = args.receiver.lower()
     debts = who_owes(group)
 
-    # BUG: Direction check is reversed — checks if receiver owes payer instead of payer owing receiver
     owed_record = next((d for d in debts if d["from"] == receiver and d["to"] == payer), None)
 
     if not owed_record:

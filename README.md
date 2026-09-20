@@ -152,7 +152,7 @@ We welcome and appreciate contributions from everyone participating in **Source 
    - Test manually in your terminal: `python3 -m split summary groupA`
 5. **Commit Your Work:** Write clear, descriptive commit messages:
    ```bash
-   git commit -m "fix: improve balance calculation accuracy"
+   git commit -m "fix: resolve issue description"
    ```
 6. **Push to Your Fork:**
    ```bash
@@ -164,7 +164,7 @@ We welcome and appreciate contributions from everyone participating in **Source 
 
 - 🔁 `good first issue`: Ideal for beginners and first-time open-source contributors.
 - 🐛 `bug`: Fixing mathematical discrepancies, edge cases, or command handling issues.
-- ✨ `enhancement`: Introducing new features, graph algorithms, or report visualizers.
+- ✨ `enhancement`: Introducing new features, balance options, or command capabilities.
 
 > 📌 **Note:** All active tasks and bug reports will be announced in the **[Issues](../../issues)** tab. Check the tab to pick your first issue!
 

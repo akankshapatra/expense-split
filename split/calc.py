@@ -6,7 +6,6 @@ def split_equally(amount, num_people):
     if num_people <= 0:
         raise ValueError("Number of people must be greater than 0")
 
-    # BUG: Uses integer division, discarding fractional cents/rupees
     each = int(amount) // num_people
     return {"each": each}
 
@@ -38,7 +37,6 @@ def who_owes(group_data):
         share = round(amount / len(members), 2)
 
         for m in members:
-            # BUG: Appends debt records even when member == paid_by with amount 0.0
             if m == paid_by:
                 debts.append({"from": m, "to": paid_by, "amount": 0.0})
             else:
