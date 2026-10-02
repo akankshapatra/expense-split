@@ -1,7 +1,7 @@
 """Unit tests for calculation logic in expense-split."""
 
 import unittest
-from split.calc import split_equally, split_by_share, who_owes
+from split.calc import split_equally, split_by_share, who_owes, get_net_balances
 
 
 class TestSplitCalculations(unittest.TestCase):
@@ -26,6 +26,21 @@ class TestSplitCalculations(unittest.TestCase):
     def test_who_owes_empty_group(self):
         """An empty group should return no debts."""
         self.assertEqual(who_owes({}), [])
+
+    def test_balances_sum_to_zero(self):
+        """Net balances in paise should always sum to exactly 0."""
+        group_data = {
+            "members": ["alice", "bob", "charlie"],
+            "expenses": [
+                {"paid_by": "alice", "amount": 10.00, "split": "equal"},
+                {"paid_by": "bob", "amount": 3.33, "split": "equal"}
+            ],
+            "settlements": [
+                {"from": "charlie", "to": "alice", "amount": 2.00}
+            ]
+        }
+        balances = get_net_balances(group_data)
+        self.assertEqual(sum(balances.values()), 0)
 
 
 if __name__ == "__main__":
