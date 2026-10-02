@@ -2,7 +2,7 @@
 
 import argparse
 import sys
-from split.calc import split_equally, who_owes
+from split.calc import split_equally, who_owes, settle_plan
 from split.io import load_group, save_group, load_all_groups
 
 
@@ -82,6 +82,21 @@ def cmd_settle(args):
     print(f"Settled! {args.payer.capitalize()} paid ₹{amount:.2f} to {args.receiver.capitalize()}.")
 
 
+def cmd_settle_plan(args):
+    group = load_group(args.group)
+    if not group:
+        print(f"Error: Group '{args.group}' not found.")
+        return
+
+    payments = settle_plan(group)
+    if not payments:
+        print("  All settled up!")
+    else:
+        print("Settle Plan:")
+        for p in payments:
+            print(f"  • {p['from'].capitalize()} must pay {p['to'].capitalize()} ₹{p['amount']:.2f}")
+
+
 def main():
     parser = argparse.ArgumentParser(description="Expense Split CLI")
     subparsers = parser.add_subparsers(dest="command", help="Available subcommands")
@@ -106,6 +121,11 @@ def main():
     p_set.add_argument("payer", help="Person paying the settlement")
     p_set.add_argument("receiver", help="Person receiving the settlement")
     p_set.set_defaults(func=cmd_settle)
+
+    # settle-plan
+    p_plan = subparsers.add_parser("settle-plan", help="Show the smallest list of payments to clear everything")
+    p_plan.add_argument("group", help="Group identifier")
+    p_plan.set_defaults(func=cmd_settle_plan)
 
     args = parser.parse_args()
     if not args.command:
