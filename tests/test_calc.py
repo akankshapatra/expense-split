@@ -4,6 +4,11 @@ import unittest
 from split.calc import split_equally, split_by_share, who_owes, get_net_balances
 
 
+def total_in_paise(result):
+    """Adds up split shares exactly, in integer paise."""
+    return sum(int(round(value * 100)) for value in result.values())
+
+
 class TestSplitCalculations(unittest.TestCase):
 
     def test_split_equally_even_division(self):
@@ -22,6 +27,51 @@ class TestSplitCalculations(unittest.TestCase):
         res = split_by_share(90, shares)
         self.assertEqual(res["alice"], 60.0)
         self.assertEqual(res["bob"], 30.0)
+
+    def test_split_by_share_original_bug_totals_exactly(self):
+        """₹100 split with equal weights must still total exactly ₹100.00."""
+        shares = {"alice": 1, "bob": 1, "charlie": 1}
+        res = split_by_share(100, shares)
+        self.assertEqual(set(res), {"alice", "bob", "charlie"})
+        self.assertEqual(total_in_paise(res), 10000)
+
+    def test_split_by_share_uneven_weights(self):
+        """Uneven weights stay proportional and preserve the exact total."""
+        shares = {"alice": 2, "bob": 1, "charlie": 1}
+        res = split_by_share(100, shares)
+        self.assertEqual(set(res), {"alice", "bob", "charlie"})
+        self.assertEqual(res["alice"], 50.0)
+        self.assertEqual(res["bob"], 25.0)
+        self.assertEqual(res["charlie"], 25.0)
+        self.assertEqual(total_in_paise(res), 10000)
+
+    def test_split_by_share_rounding_heavy(self):
+        """Many fractional paise still leave no money lost or created."""
+        shares = {"alice": 1, "bob": 1, "charlie": 1, "dave": 1, "erin": 1}
+        res = split_by_share(0.03, shares)
+        self.assertEqual(set(res), {"alice", "bob", "charlie", "dave", "erin"})
+        self.assertEqual(total_in_paise(res), 3)
+
+    def test_split_by_share_is_deterministic(self):
+        """Identical inputs always produce identical output."""
+        shares = {"alice": 3, "bob": 2, "charlie": 4}
+        first = split_by_share(123.45, shares)
+        for _ in range(5):
+            self.assertEqual(split_by_share(123.45, shares), first)
+
+    def test_split_by_share_exact_division_unchanged(self):
+        """Splitting amounts that divide exactly keeps the expected values."""
+        self.assertEqual(split_by_share(90, {"alice": 2, "bob": 1}),
+                         {"alice": 60.0, "bob": 30.0})
+        self.assertEqual(split_by_share(100, {"alice": 1, "bob": 1}),
+                         {"alice": 50.0, "bob": 50.0})
+
+    def test_split_by_share_zero_total_weights(self):
+        """Zero or negative total weights should still raise ValueError."""
+        with self.assertRaises(ValueError):
+            split_by_share(100, {"alice": 0, "bob": 0})
+        with self.assertRaises(ValueError):
+            split_by_share(100, {"alice": -1, "bob": -1})
 
     def test_who_owes_empty_group(self):
         """An empty group should return no debts."""
