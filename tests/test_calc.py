@@ -45,3 +45,22 @@ class TestSplitCalculations(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
+
+from split.calc import who_owes, settle_plan
+
+def test_no_self_debt():
+    # Simulate a scenario where Alice pays for a group including herself
+    group_data = {
+        "members": ["Alice", "Bob"],
+        "expenses": [{"paid_by": "Alice", "amount": 100}]
+    }
+    
+    # Test who_owes function
+    debts = who_owes(group_data)
+    for debt in debts:
+        assert debt["from"] != debt["to"], "Bug found: Self-debt detected in who_owes!"
+
+    # Test settle_plan function
+    payments = settle_plan(group_data)
+    for payment in payments:
+        assert payment["from"] != payment["to"], "Bug found: Self-debt detected in settle_plan!"
