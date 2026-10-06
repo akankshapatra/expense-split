@@ -1,7 +1,7 @@
 """Unit tests for calculation logic in expense-split."""
 
 import unittest
-from split.calc import split_equally, split_by_share, who_owes, get_net_balances
+from split.calc import split_equally, split_by_share, who_owes, get_net_balances, settle_plan
 
 
 class TestSplitCalculations(unittest.TestCase):
@@ -42,25 +42,21 @@ class TestSplitCalculations(unittest.TestCase):
         balances = get_net_balances(group_data)
         self.assertEqual(sum(balances.values()), 0)
 
+    def test_no_self_debt(self):
+        """Ensure a person cannot owe themselves money."""
+        group_data = {
+            "members": ["alice", "bob"],
+            "expenses": [{"paid_by": "alice", "amount": 100.0, "split": "equal"}]
+        }
+        
+        # Test who_owes function
+        debts = who_owes(group_data)
+        for debt in debts:
+            self.assertNotEqual(debt["from"], debt["to"], "Bug found: Self-debt detected in who_owes!")
 
+        # Test settle_plan function
+        payments = settle_plan(group_data)
+        for payment in payments:
+            self.assertNotEqual(payment["from"], payment["to"], "Bug found: Self-debt detected in settle_plan!")
 if __name__ == "__main__":
     unittest.main()
-
-from split.calc import who_owes, settle_plan
-
-def test_no_self_debt():
-    # Simulate a scenario where Alice pays for a group including herself
-    group_data = {
-        "members": ["Alice", "Bob"],
-        "expenses": [{"paid_by": "Alice", "amount": 100}]
-    }
-    
-    # Test who_owes function
-    debts = who_owes(group_data)
-    for debt in debts:
-        assert debt["from"] != debt["to"], "Bug found: Self-debt detected in who_owes!"
-
-    # Test settle_plan function
-    payments = settle_plan(group_data)
-    for payment in payments:
-        assert payment["from"] != payment["to"], "Bug found: Self-debt detected in settle_plan!"
