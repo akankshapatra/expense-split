@@ -1,5 +1,10 @@
 """Expense splitting and debt calculation logic."""
 
+from decimal import Decimal, ROUND_FLOOR, ROUND_HALF_UP
+
+# The smallest monetary unit used when converting amounts to whole paise.
+_SCALE = Decimal("0.01")
+
 
 def split_equally(amount, num_people):
     """Splits a total amount equally among a given number of people."""
@@ -11,14 +16,44 @@ def split_equally(amount, num_people):
 
 
 def split_by_share(amount, shares):
-    """Splits an amount according to given proportion weights in a dictionary."""
+    """Splits an amount according to given proportion weights in a dictionary.
+
+    The split is done in integer paise so the returned shares always add up to
+    exactly ``amount``.  Each participant first receives the floor of their
+    proportional share, then any leftover paise are handed out one at a time to
+    the participants with the largest fractional remainders (ties broken by
+    their order in ``shares``), which keeps the result deterministic.
+    """
     total_shares = sum(shares.values())
     if total_shares <= 0:
         raise ValueError("Total shares must be greater than 0")
 
-    result = {}
+    amount_paise = int(
+        (Decimal(str(amount)) / _SCALE).quantize(Decimal("1"), rounding=ROUND_HALF_UP)
+    )
+
+    # Give everyone the floor of their proportional share (an exact integer
+    # computation in paise), then record how much each is short of it.
+    allocations = {}
+    remainders = []
+    unallocated = amount_paise
     for person, weight in shares.items():
-        result[person] = round((amount * weight) / total_shares, 2)
+        exact = Decimal(amount_paise) * Decimal(str(weight)) / Decimal(str(total_shares))
+        base = int(exact.to_integral_value(rounding=ROUND_FLOOR))
+        allocations[person] = base
+        unallocated -= base
+        remainders.append((exact - base, person))
+
+    # Hand out the leftover paise to the largest fractional remainders first;
+    # ties are broken by the participant's order in ``shares`` so the result is
+    # deterministic.
+    remainders.sort(key=lambda item: (-item[0],))
+    for i in range(unallocated):
+        allocations[remainders[i % len(remainders)][1]] += 1
+
+    result = {}
+    for person in shares:
+        result[person] = float(Decimal(allocations[person]) * _SCALE)
     return result
 
 
